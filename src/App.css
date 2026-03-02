@@ -263,6 +263,21 @@ header {
   transition: background 0.2s ease, border-color 0.2s ease;
 }
 
+/* Actions pushed to the right side of the pane header */
+.pane-header-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Smaller icon button variant for use inside pane headers */
+.pane-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+}
+
 /* ── CodeMirror Editor ───────────────────────────────────────────────────── */
 
 /* The wrapper div injected by @uiw/react-codemirror must fill the pane */

@@ -1,14 +1,23 @@
-import { oneDark } from "@codemirror/theme-one-dark";
-import { EditorView } from "@codemirror/view";
-import CodeMirror, { type Extension } from "@uiw/react-codemirror";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import { languages } from "@codemirror/language-data";
+import { oneDark } from "@codemirror/theme-one-dark";
+import { EditorView } from "@codemirror/view";
+import CodeMirror, {
+  type Extension,
+  type ReactCodeMirrorRef,
+} from "@uiw/react-codemirror";
+import { forwardRef, useImperativeHandle, useRef } from "react";
 import type { Theme } from "../types";
 
 interface MarkdownEditorProps {
   value: string;
   onChange: (value: string) => void;
   theme: Theme;
+}
+
+export interface MarkdownEditorHandle {
+  /** Inserts text at the current cursor position (or replaces selection). */
+  insert: (text: string) => void;
 }
 
 /** Light theme that matches the app's design tokens */
@@ -18,8 +27,7 @@ const lightTheme = EditorView.theme(
       background: "var(--editor-bg)",
       color: "var(--textarea-color)",
       height: "100%",
-      fontFamily:
-        "'Fira Code', 'Cascadia Code', 'Monaco', 'Menlo', monospace",
+      fontFamily: "'Fira Code', 'Cascadia Code', 'Monaco', 'Menlo', monospace",
       fontSize: "0.9rem",
     },
     ".cm-content": {
@@ -45,12 +53,31 @@ const baseExtensions: Extension[] = [
   EditorView.lineWrapping,
 ];
 
-export function MarkdownEditor({ value, onChange, theme }: MarkdownEditorProps) {
-  const themeExtension: Extension =
-    theme === "dark" ? oneDark : lightTheme;
+export const MarkdownEditor = forwardRef<
+  MarkdownEditorHandle,
+  MarkdownEditorProps
+>(function MarkdownEditor({ value, onChange, theme }, ref) {
+  const cmRef = useRef<ReactCodeMirrorRef>(null);
+
+  useImperativeHandle(ref, () => ({
+    insert(text: string) {
+      const view = cmRef.current?.view;
+      if (!view) return;
+
+      const { from, to } = view.state.selection.main;
+      view.dispatch({
+        changes: { from, to, insert: text },
+        selection: { anchor: from + text.length },
+      });
+      view.focus();
+    },
+  }));
+
+  const themeExtension: Extension = theme === "dark" ? oneDark : lightTheme;
 
   return (
     <CodeMirror
+      ref={cmRef}
       value={value}
       onChange={onChange}
       extensions={[...baseExtensions, themeExtension]}
@@ -79,4 +106,4 @@ export function MarkdownEditor({ value, onChange, theme }: MarkdownEditorProps) 
       style={{ height: "100%", overflow: "hidden" }}
     />
   );
-}
+});

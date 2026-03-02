@@ -5,25 +5,32 @@ import {
   Moon,
   Sun,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import remarkGfm from "remark-gfm";
 import { toast, Toaster } from "sonner";
 import "./App.css";
+import { ImageUploadButton } from "./components/ImageUploadButton";
+import {
+  MarkdownEditor,
+  type MarkdownEditorHandle,
+} from "./components/MarkdownEditor";
 import Mermaid from "./components/Mermaid";
-import { MarkdownEditor } from "./components/MarkdownEditor";
 import { PageBreak } from "./components/PageBreak";
 import { WatermarkButton } from "./components/WatermarkButton";
 import { WatermarkOverlay } from "./components/WatermarkOverlay";
-import { DEFAULT_MARKDOWN } from "./constants/markdown-example";
+import { getDefaultMarkdown } from "./constants/markdown-example";
+import { useImageUpload } from "./hooks/useImageUpload";
 import { useWatermark } from "./hooks/useWatermark";
 import remarkPageBreak from "./plugins/remarkPageBreak";
 
 type Theme = "light" | "dark";
 
 function App() {
-  const [markdown, setMarkdown] = useState(DEFAULT_MARKDOWN);
+  const [markdown, setMarkdown] = useState(() =>
+    getDefaultMarkdown(import.meta.env.BASE_URL),
+  );
   const [theme, setTheme] = useState<Theme>(() => {
     const stored = localStorage.getItem("md-theme");
     if (stored === "dark" || stored === "light") return stored;
@@ -32,7 +39,11 @@ function App() {
       : "light";
   });
 
+  const editorRef = useRef<MarkdownEditorHandle>(null);
   const { watermark, loadFromFile, remove: removeWatermark } = useWatermark();
+  const { upload: uploadImage } = useImageUpload((snippet) => {
+    editorRef.current?.insert(`\n${snippet}\n`);
+  });
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -49,26 +60,17 @@ function App() {
       link.rel = "stylesheet";
       document.head.appendChild(link);
     }
-    // Use the minified GitHub themes bundled with highlight.js
     link.href =
       theme === "dark"
-        ? new URL(
-            "highlight.js/styles/github-dark.min.css",
-            import.meta.url,
-          ).href
-        : new URL(
-            "highlight.js/styles/github.min.css",
-            import.meta.url,
-          ).href;
+        ? new URL("highlight.js/styles/github-dark.min.css", import.meta.url)
+            .href
+        : new URL("highlight.js/styles/github.min.css", import.meta.url).href;
   }, [theme]);
 
   const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));
-
   const handlePrint = () => window.print();
-
-  const handleMermaidError = (msg: string) => {
+  const handleMermaidError = (msg: string) =>
     toast.error(`Mermaid: ${msg}`, { duration: 5000 });
-  };
 
   return (
     <div className="app-container">
@@ -109,8 +111,12 @@ function App() {
           <div className="pane-header">
             <Code size={15} />
             <span>Markdown Editor</span>
+            <div className="pane-header-actions">
+              <ImageUploadButton onUpload={uploadImage} />
+            </div>
           </div>
           <MarkdownEditor
+            ref={editorRef}
             value={markdown}
             onChange={setMarkdown}
             theme={theme}

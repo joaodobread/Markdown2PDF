@@ -1,7 +1,21 @@
-export const DEFAULT_MARKDOWN = `# Markdown2PDF — Exemplo
+/**
+ * Returns the default demo Markdown string.
+ * @param base - Vite's import.meta.env.BASE_URL (e.g. "/" in dev, "/Markdown2PDF/" in prod)
+ */
+export function getDefaultMarkdown(base: string): string {
+  // Ensure no double slashes when base already ends with "/"
+  const img = (path: string) => `${base.replace(/\/$/, '')}/${path}`;
+
+  return `# Markdown2PDF — Exemplo
 
 Bem-vindo ao **Markdown2PDF**, um editor Markdown com preview em tempo real,
 suporte a diagramas [Mermaid](https://mermaid.js.org/) e exportação para PDF.
+
+---
+
+## Imagem
+
+![wololo](${img('wololo.jpeg')})
 
 ---
 
@@ -70,3 +84,4 @@ console.log(greet('Mundo'));
 Este conteúdo começa em uma nova página no PDF exportado.
 Use \`---page---\` para controlar onde cada página começa.
 `;
+}
