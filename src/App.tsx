@@ -1,10 +1,4 @@
-import {
-  Code,
-  Download,
-  FileText,
-  Moon,
-  Sun,
-} from "lucide-react";
+import { Code, Download, FileText, Moon, Sun } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
@@ -147,7 +141,7 @@ function App() {
                   }
                   return <div className={className} {...props} />;
                 },
-                code({ node, className, children, ...props }) {
+                code({ className, children, ...props }) {
                   const isMermaid = /language-mermaid/.exec(className || "");
                   if (isMermaid) {
                     return (

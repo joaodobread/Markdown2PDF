@@ -1,12 +1,12 @@
+import { RangeSetBuilder } from "@codemirror/state";
 import {
   Decoration,
-  DecorationSet,
+  type DecorationSet,
   EditorView,
   ViewPlugin,
   ViewUpdate,
   WidgetType,
-} from '@codemirror/view';
-import { RangeSetBuilder } from '@codemirror/state';
+} from "@codemirror/view";
 
 /**
  * Matches the data URL portion inside a Markdown image:
@@ -20,8 +20,11 @@ const DATA_URL_RE = /(data:(image\/[^;]+);base64,[A-Za-z0-9+/]+=*)/g;
 
 /** Widget that replaces the raw base64 blob with a small readable badge */
 class Base64ImageWidget extends WidgetType {
-  constructor(private readonly mimeType: string) {
+  mimeType: string;
+
+  constructor(mimeType: string) {
     super();
+    this.mimeType = mimeType;
   }
 
   eq(other: Base64ImageWidget) {
@@ -29,10 +32,10 @@ class Base64ImageWidget extends WidgetType {
   }
 
   toDOM() {
-    const span = document.createElement('span');
-    span.className = 'cm-base64-placeholder';
+    const span = document.createElement("span");
+    span.className = "cm-base64-placeholder";
     span.textContent = `[imagem: ${this.mimeType}]`;
-    span.title = 'Dados da imagem ocultados para melhor legibilidade';
+    span.title = "Dados da imagem ocultados para melhor legibilidade";
     return span;
   }
 
