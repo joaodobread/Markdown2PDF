@@ -1,0 +1,7 @@
+export type Theme = 'light' | 'dark';
+
+export interface Toast {
+  id: string;
+  message: string;
+  exiting: boolean;
+}

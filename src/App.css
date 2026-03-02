@@ -155,6 +155,77 @@ header {
   background: var(--primary-hover);
 }
 
+/* ── Watermark ───────────────────────────────────────────────────────────── */
+
+/*
+ * The overlay sits on top of the preview pane content without blocking
+ * interaction (pointer-events: none). In print mode, `position: fixed`
+ * causes the browser to stamp it on every page automatically.
+ */
+.preview-pane {
+  position: relative; /* anchor for the screen overlay */
+}
+
+.watermark-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.watermark-img {
+  max-width: 60%;
+  max-height: 60%;
+  object-fit: contain;
+  transform: rotate(-45deg);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Thumbnail shown in the header when a watermark is active */
+.watermark-control {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.watermark-thumb {
+  height: 28px;
+  width: 28px;
+  object-fit: contain;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface-alt);
+  cursor: pointer;
+  padding: 2px;
+  transition: border-color 0.15s;
+}
+
+.watermark-thumb:hover {
+  border-color: var(--primary);
+}
+
+.watermark-remove {
+  color: var(--text-muted);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Print: switch to fixed so it repeats on every page */
+@media print {
+  .watermark-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+  }
+}
+
 /* ── Editor Layout — exact 50/50 split ───────────────────────────────────── */
 .editor-layout {
   display: flex;
@@ -328,6 +399,57 @@ header {
   margin: 1.5rem 0;
 }
 
+/* ── Page Break ──────────────────────────────────────────────────────────── */
+
+/*
+ * Screen: renders a visual divider with a "Nova página" label so the user
+ * can see exactly where the page boundary will fall in the exported PDF.
+ */
+.page-break {
+  position: relative;
+  margin: 2rem 0;
+  height: 0;
+  border: none;
+  border-top: 2px dashed var(--border);
+}
+
+.page-break::before {
+  content: 'Nova página';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0 0.75rem;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+/*
+ * Print: hide the visual label and force a real page break.
+ * The ::before pseudo-element is suppressed so nothing prints on the boundary.
+ */
+@media print {
+  .page-break {
+    display: block !important;
+    height: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    page-break-before: always !important;
+    break-before: page !important;
+  }
+
+  .page-break::before {
+    display: none !important;
+  }
+}
+
 /* ── Mermaid Container ───────────────────────────────────────────────────── */
 .markdown-content .mermaid-container {
   margin: 1.5rem 0;
@@ -342,93 +464,8 @@ header {
   height: auto !important;
 }
 
-/* ── Toast System ────────────────────────────────────────────────────────── */
-.toast-container {
-  position: fixed;
-  bottom: 1.25rem;
-  right: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
-  z-index: 1000;
-  pointer-events: none;
-}
-
-.toast {
-  background: #dc2626;
-  color: #fff;
-  padding: 0.75rem 1rem;
-  border-radius: 10px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-  display: flex;
-  align-items: flex-start;
-  gap: 0.625rem;
-  max-width: 360px;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  line-height: 1.4;
-  pointer-events: all;
-  animation: toast-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.toast--exit {
-  animation: toast-out 0.3s cubic-bezier(0.4, 0, 1, 1) both;
-}
-
-.toast-icon {
-  flex-shrink: 0;
-  margin-top: 1px;
-  opacity: 0.9;
-}
-
-.toast-message {
-  flex: 1;
-  word-break: break-word;
-}
-
-.toast-close {
-  flex-shrink: 0;
-  background: transparent;
-  border: none;
-  color: inherit;
-  opacity: 0.7;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  margin-top: 1px;
-  transition: opacity 0.15s;
-}
-
-.toast-close:hover {
-  opacity: 1;
-}
-
-@keyframes toast-in {
-  from {
-    transform: translateX(110%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes toast-out {
-  from {
-    transform: translateX(0);
-    opacity: 1;
-    max-height: 200px;
-    margin-top: 0;
-  }
-  to {
-    transform: translateX(110%);
-    opacity: 0;
-    max-height: 0;
-    margin-top: -0.625rem;
-  }
-}
+/* ── Toast (Sonner) ──────────────────────────────────────────────────────── */
+/* Sonner handles its own styles; we only need to hide toasts during print. */
 
 /* ── Print Styles ────────────────────────────────────────────────────────── */
 @media print {
