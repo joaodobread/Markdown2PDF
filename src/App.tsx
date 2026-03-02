@@ -7,10 +7,12 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import rehypeHighlight from "rehype-highlight";
 import remarkGfm from "remark-gfm";
 import { toast, Toaster } from "sonner";
 import "./App.css";
 import Mermaid from "./components/Mermaid";
+import { MarkdownEditor } from "./components/MarkdownEditor";
 import { PageBreak } from "./components/PageBreak";
 import { WatermarkButton } from "./components/WatermarkButton";
 import { WatermarkOverlay } from "./components/WatermarkOverlay";
@@ -35,6 +37,29 @@ function App() {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("md-theme", theme);
+  }, [theme]);
+
+  // Swap highlight.js theme stylesheet when the app theme changes
+  useEffect(() => {
+    const id = "hljs-theme";
+    let link = document.getElementById(id) as HTMLLinkElement | null;
+    if (!link) {
+      link = document.createElement("link");
+      link.id = id;
+      link.rel = "stylesheet";
+      document.head.appendChild(link);
+    }
+    // Use the minified GitHub themes bundled with highlight.js
+    link.href =
+      theme === "dark"
+        ? new URL(
+            "highlight.js/styles/github-dark.min.css",
+            import.meta.url,
+          ).href
+        : new URL(
+            "highlight.js/styles/github.min.css",
+            import.meta.url,
+          ).href;
   }, [theme]);
 
   const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));
@@ -85,11 +110,10 @@ function App() {
             <Code size={15} />
             <span>Markdown Editor</span>
           </div>
-          <textarea
-            className="editor-textarea"
+          <MarkdownEditor
             value={markdown}
-            onChange={(e) => setMarkdown(e.target.value)}
-            spellCheck={false}
+            onChange={setMarkdown}
+            theme={theme}
           />
         </div>
 
@@ -109,6 +133,7 @@ function App() {
           <div className="markdown-content">
             <ReactMarkdown
               remarkPlugins={[remarkGfm, remarkPageBreak]}
+              rehypePlugins={[rehypeHighlight]}
               components={{
                 div({ className, ...props }) {
                   if (className?.includes("page-break")) {
@@ -117,16 +142,19 @@ function App() {
                   return <div className={className} {...props} />;
                 },
                 code({ node, className, children, ...props }) {
-                  const match = /language-mermaid/.exec(className || "");
-                  return match ? (
-                    <div className="mermaid-container">
-                      <Mermaid
-                        chart={String(children).replace(/\n$/, "")}
-                        theme={theme}
-                        onError={handleMermaidError}
-                      />
-                    </div>
-                  ) : (
+                  const isMermaid = /language-mermaid/.exec(className || "");
+                  if (isMermaid) {
+                    return (
+                      <div className="mermaid-container">
+                        <Mermaid
+                          chart={String(children).replace(/\n$/, "")}
+                          theme={theme}
+                          onError={handleMermaidError}
+                        />
+                      </div>
+                    );
+                  }
+                  return (
                     <code className={className} {...props}>
                       {children}
                     </code>

@@ -263,20 +263,25 @@ header {
   transition: background 0.2s ease, border-color 0.2s ease;
 }
 
-/* ── Editor Textarea ─────────────────────────────────────────────────────── */
-.editor-textarea {
+/* ── CodeMirror Editor ───────────────────────────────────────────────────── */
+
+/* The wrapper div injected by @uiw/react-codemirror must fill the pane */
+.editor-pane > .cm-theme {
   flex: 1;
-  border: none;
-  padding: 1.25rem 1.5rem;
-  font-family: 'Fira Code', 'Cascadia Code', 'Monaco', 'Menlo', monospace;
-  font-size: 0.9rem;
-  line-height: 1.7;
-  resize: none;
-  outline: none;
-  background: var(--editor-bg);
-  color: var(--textarea-color);
   min-height: 0;
-  transition: background 0.2s ease, color 0.2s ease;
+  overflow: hidden;
+}
+
+/* The CodeMirror root element */
+.editor-pane .cm-editor {
+  height: 100%;
+  background: var(--editor-bg);
+  transition: background 0.2s ease;
+}
+
+/* Remove the default blue focus ring — we rely on the cursor color instead */
+.editor-pane .cm-editor.cm-focused {
+  outline: none;
 }
 
 /* ── Preview Pane ────────────────────────────────────────────────────────── */
@@ -295,6 +300,33 @@ header {
 }
 
 /* ── Markdown Styles ─────────────────────────────────────────────────────── */
+
+/* Tailwind preflight resets list-style to none — restore it here */
+.markdown-content ul {
+  list-style-type: disc;
+  padding-left: 1.75rem;
+  margin: 0.75rem 0;
+}
+
+.markdown-content ol {
+  list-style-type: decimal;
+  padding-left: 1.75rem;
+  margin: 0.75rem 0;
+}
+
+.markdown-content li {
+  margin: 0.25rem 0;
+}
+
+.markdown-content li > ul {
+  list-style-type: circle;
+  margin: 0.25rem 0;
+}
+
+.markdown-content li > ul > li > ul {
+  list-style-type: square;
+}
+
 .markdown-content h1 {
   font-size: 1.75rem;
   border-bottom: 2px solid var(--border);
